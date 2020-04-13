@@ -15,6 +15,7 @@ class HashTable:
     def __init__(self, capacity):
         self.capacity = capacity  # Number of buckets in the hash table
         self.storage = [None] * capacity
+        self.length = 0
 
 
     def _hash(self, key):
@@ -54,8 +55,23 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
-
+        # take the key and value, and put it somewhere in the array
+        # get an index for the key
+        index = self._hash_mod(key)
+        # link_pair = LinkedPair(key, value)
+        # if storage is not empty at the index, handle the collison
+        if self.storage[index] is not None:
+            # print('Warning: Collision detected for key ' + key)
+            # create a new node
+            newNode = LinkedPair(key,value)
+            # set the prev node to the next node of our new node
+            newNode.next = self.storage[index]
+            #set the new node as the head
+            self.storage[index] = newNode
+        # if storage is empty
+        else:
+            self.storage[index] = LinkedPair(key, value)
+            
 
 
     def remove(self, key):
@@ -66,7 +82,37 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        index = self._hash_mod(key)
+        # check if the index is empty
+        if self.storage[index] is not None:
+            # check if the index has been collided with, if so, traverse the list looking for the key. print error if not
+            if self.storage[index].next is not None:
+                currentNode = self.storage[index]
+                prevNode = None
+                keyRemoved = False
+                while currentNode is not None:
+                    if key == currentNode.key:
+                        #remove the node
+                        if prevNode is None:
+                            #we are at the head of a list, set the next node to the head
+                            keyRemoved = True
+                            self.storage[index] = currentNode.next
+                        else:
+                            #we are in a list, set currentNode.next to the previous node
+                            keyRemoved = True
+                            prevNode.next = currentNode.next
+                    #key was not found, advance to the next node
+                    prevNode = currentNode
+                    currentNode = currentNode.next
+                # if we ran the list at the index and couldn't find the key to remove, warn the user
+                if keyRemoved == False:
+                    print("WARNING: Could not Remove at Index " + str(index))
+            else:
+                #or, it was the only key at the index, so remove it
+                self.storage[index] = None
+        else:
+            print("WARNING: The index is empty")
+
 
 
     def retrieve(self, key):
@@ -77,7 +123,23 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        index = self._hash_mod(key)
+        # return empty if empty
+        if self.storage[index] is None:
+            return None
+        else:
+            # check if the index has been collided with
+            if self.storage[index].next is not None:
+                currentNode = self.storage[index]
+                # look through the list
+                while currentNode is not None:
+                    if key == currentNode.key:
+                        # if key, return value
+                        return currentNode.value
+                    # if not, advance to next node
+                    currentNode = currentNode.next
+            else:
+                return self.storage[index].value
 
 
     def resize(self):
@@ -87,6 +149,30 @@ class HashTable:
 
         Fill this in.
         '''
+        old_storage = self.storage
+        self.capacity *= 2
+        # create a new array size * 2
+        self.storage = [None] * self.capacity
+        # move all values over
+        for pair in old_storage:
+            # figure out the new correct place for the key/value
+            # new_index = self._hash_mod(pair.key)
+            # reinsert the value
+            # OR
+            # re-insert each key / value
+
+            # if our pair has a value
+            if pair is not None:
+                # and is an uncollided index
+                if pair.next is None:
+                    self.insert(pair.key,pair.value)
+                else:
+                    # traverse the singly linked list of our LinkedPairs, inserting as we go
+                    collidedIndexPair = pair
+                    while collidedIndexPair is not None:
+                        self.insert(collidedIndexPair.key,collidedIndexPair.value)
+                        collidedIndexPair = collidedIndexPair.next
+
         pass
 
 
